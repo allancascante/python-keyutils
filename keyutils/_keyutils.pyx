@@ -28,6 +28,35 @@ cdef extern from "keyutils.h" nogil:
     int c_EKEYEXPIRED "EKEYEXPIRED"
     int c_EKEYREVOKED "EKEYREVOKED"
     int c_EKEYREJECTED "EKEYREJECTED"
+    int c_KEY_POS_VIEW "KEY_POS_VIEW"
+    int c_KEY_POS_READ "KEY_POS_READ"
+    int c_KEY_POS_WRITE "KEY_POS_WRITE"
+    int c_KEY_POS_SEARCH "KEY_POS_SEARCH"
+    int c_KEY_POS_LINK "KEY_POS_LINK"
+    int c_KEY_POS_SETATTR "KEY_POS_SETATTR"
+    int c_KEY_POS_ALL "KEY_POS_ALL"
+    int c_KEY_USR_VIEW "KEY_USR_VIEW"
+    int c_KEY_USR_READ "KEY_USR_READ"
+    int c_KEY_USR_WRITE "KEY_USR_WRITE"
+    int c_KEY_USR_SEARCH "KEY_USR_SEARCH"
+    int c_KEY_USR_LINK "KEY_USR_LINK"
+    int c_KEY_USR_SETATTR "KEY_USR_SETATTR"
+    int c_KEY_USR_ALL "KEY_USR_ALL"
+    int c_KEY_GRP_VIEW "KEY_GRP_VIEW"
+    int c_KEY_GRP_READ "KEY_GRP_READ"
+    int c_KEY_GRP_WRITE "KEY_GRP_WRITE"
+    int c_KEY_GRP_SEARCH "KEY_GRP_SEARCH"
+    int c_KEY_GRP_LINK "KEY_GRP_LINK"
+    int c_KEY_GRP_SETATTR "KEY_GRP_SETATTR"
+    int c_KEY_GRP_ALL "KEY_GRP_ALL"
+    int c_KEY_OTH_VIEW "KEY_OTH_VIEW"
+    int c_KEY_OTH_READ "KEY_OTH_READ"
+    int c_KEY_OTH_WRITE "KEY_OTH_WRITE"
+    int c_KEY_OTH_SEARCH "KEY_OTH_SEARCH"
+    int c_KEY_OTH_LINK "KEY_OTH_LINK"
+    int c_KEY_OTH_SETATTR "KEY_OTH_SETATTR"
+    int c_KEY_OTH_ALL "KEY_OTH_ALL"
+
     int c_add_key "add_key"(char *key_type, char *description, void *payload,
             int plen, int keyring)
     int c_request_key "request_key"(char *key_type, char *description,
@@ -41,6 +70,9 @@ cdef extern from "keyutils.h" nogil:
     int c_revoke "keyctl_revoke"(int key)
     int c_set_timeout "keyctl_set_timeout" (int key, int timeout)
     int c_clear "keyctl_clear" (int keyring)
+    int c_update_permissions "keyctl_setperm" (int key, int perm)
+    int c_get_persistent "keyctl_get_persistent" (int uid, int keyring)
+
 
 
 class error(Exception):
@@ -57,7 +89,34 @@ class constants:
     EKEYEXPIRED = c_EKEYEXPIRED
     EKEYREVOKED = c_EKEYREVOKED
     EKEYREJECTED = c_EKEYREJECTED
-
+    KEY_POS_VIEW = c_KEY_POS_VIEW
+    KEY_POS_READ = c_KEY_POS_READ
+    KEY_POS_WRITE = c_KEY_POS_WRITE
+    KEY_POS_SEARCH = c_KEY_POS_SEARCH
+    KEY_POS_LINK = c_KEY_POS_LINK
+    KEY_POS_SETATTR = c_KEY_POS_SETATTR
+    KEY_POS_ALL = c_KEY_POS_ALL
+    KEY_USR_VIEW = c_KEY_USR_VIEW
+    KEY_USR_READ  = c_KEY_USR_READ
+    KEY_USR_WRITE = c_KEY_USR_WRITE
+    KEY_USR_SEARCH = c_KEY_USR_SEARCH
+    KEY_USR_LINK  = c_KEY_USR_LINK
+    KEY_USR_SETATTR = c_KEY_USR_SETATTR
+    KEY_USR_ALL = c_KEY_USR_ALL
+    KEY_GRP_VIEW = c_KEY_GRP_VIEW
+    KEY_GRP_READ = c_KEY_GRP_READ
+    KEY_GRP_WRITE = c_KEY_GRP_WRITE
+    KEY_GRP_SEARCH = c_KEY_GRP_SEARCH
+    KEY_GRP_LINK = c_KEY_GRP_LINK
+    KEY_GRP_SETATTR = c_KEY_GRP_SETATTR
+    KEY_GRP_ALL = c_KEY_GRP_ALL
+    KEY_OTH_VIEW = c_KEY_OTH_VIEW
+    KEY_OTH_READ = c_KEY_OTH_READ
+    KEY_OTH_WRITE = c_KEY_OTH_WRITE
+    KEY_OTH_SEARCH  = c_KEY_OTH_SEARCH
+    KEY_OTH_LINK  = c_KEY_OTH_LINK
+    KEY_OTH_SETATTR = c_KEY_OTH_SETATTR
+    KEY_OTH_ALL = c_KEY_OTH_ALL
 
 def add_key(bytes key_type, bytes description, bytes payload, int keyring):
     cdef int rc
@@ -182,3 +241,21 @@ def clear(int keyring):
         PyErr_SetFromErrno(error)
     else:
         return None
+
+def set_permission(int keyring, int perm):
+    cdef int rc
+    with nogil:
+        rc = c_update_permissions(keyring, perm)
+    if rc < 0:
+        PyErr_SetFromErrno(error)
+    else:
+        return None
+
+def get_persistent(int uid, int keyring):
+    cdef int rc
+    with nogil:
+        rc = c_get_persistent(uid, keyring)
+    if rc < 0:
+        PyErr_SetFromErrno(error)
+    else:
+        return rc

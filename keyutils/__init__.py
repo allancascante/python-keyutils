@@ -77,3 +77,13 @@ def set_timeout(key, timeout):
 def clear(keyring):
     """Clear the keyring."""
     return _keyutils.clear(keyring)
+
+def set_permission(keyring, perm):
+    """Set the given permission mask"""
+    return _keyutils.set_permission(keyring, perm)
+
+def get_persistent(keyring, uid):
+    """gets the persistent keyring for either the current UID
+       or the specified UID and attaches it to the nominated keyring
+     """
+    return _keyutils.get_persistent(uid, keyring)
